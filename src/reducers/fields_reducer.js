@@ -86,10 +86,7 @@ const feildsReducer = (state = initialState, action) => {
           (field) => field.id === action.payload.fieldId ? {...field, choices: field.choices.filter(choice => choice.id !== action.payload.id)} : field
         )
       };
-
     case IMPORT_DATA:
-      console.log(action.payload)
-
       return {
         ...state,
         fields: action.payload
