@@ -1,149 +1,91 @@
 import React, {Component} from 'react';
-// import styled from 'styled-components';
+import PropTypes from 'prop-types';
+import {connect} from 'react-redux';
+import styled from 'styled-components';
+
+
+//Actions
+import {createField} from 'actions/action_fields';
+
+//Components
 import { Margin } from 'styled-components-spacing';
-
 import Wrap from 'components/utils/wrap';
+import QuestionText from 'components/form/question_text';
+import QuestionChoice from 'components/form/question_choice';
+import Button from 'components/button/button';
 
-import {generateID} from 'utils/helpers';
 
+//Containers
+import FormAdd from 'containers/form_add';
+import FormImport from 'containers/form_import';
+
+
+const Actions = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+`;
+
+const Export = styled.textarea`
+  width: 100%;
+  height: 100px;
+  margin-top: 10px;
+`;
 
 class Form extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      fields: [],
+      export: '',
     };
   }
 
-  componentDidUpdate(){
-    console.log(this.state.fields)
-  }
-
-  handleFormSubmit(){
-    JSON.stringify(this.state.fields);
-  }
-
-  handleAddField(){
-    const type = document.getElementById('field_selector').value;
-    const field = {
-      type: type,
-      id: generateID(),
-      question: ''
-    };
-
-    if(type === "text"){
-      field.long = false;
-      field.answer = "";
-    }
-
-    if(type === "choice"){
-      field.multi = false;
-      field.choices = [{
-        id: generateID(),
-        label: 'Option 1',
-      }];
-      field.answer = '';
-    }
-
-    this.setState({fields: [...this.state.fields, field]});
-  }
-
-  updateFieldState(index, key, value){
-    let fields = this.state.fields;
-    fields[index][key] = value;
-    this.setState({fields: fields});
-  }
-
-  destroyField(index){
-    let fields = this.state.fields;
-    fields.splice(index, 1)
-    this.setState({fields: fields});
-  }
-
-  createChoice(index){
-
-  }
-
-  renderField(field, index){
-    if(field.type === "text"){
-      return(
-        <div>
-          <input type="text" name={field.id} id={field.id} value={field.question} onChange={({target}) => this.updateFieldState(index, 'question', target.value)} />
-          <div>
-          { field.long ?
-            <textarea name={field.id} id={field.id} value={field.answer} onChange={({target}) => this.updateFieldState(index, 'answer', target.value)} readOnly />
-            :
-            <input type="text" name={field.id} id={field.id} value={field.answer} onChange={({target}) => this.updateFieldState(index, 'answer', target.value)} readOnly />
-          }
-          </div>
-          <div>
-            <label>
-              <input type="checkbox" onChange={({target}) => this.updateFieldState(index, 'long', target.checked)} />
-              Long Answer
-            </label>
-            <button type="button" onClick={() => this.destroyField(index)}>Delete Question</button>
-          </div>
-        </div>
-      )
-    }
-
-    if(field.type === "choice"){
-      return(
-        <div>
-          <input type="text" placeholder="Question" name={field.id} id={field.id} value={field.question} onChange={(event) => this.handleInputChange(event, index)} />
-          {field.choices.map((choice, index) => {
-            return(
-              <div key={index}>
-                <label>
-                  {field.multi ?
-                    <input type="checkbox" />
-                  :
-                    <input type="radio" />
-                  }
-                  {choice.label}
-                </label>
-              </div>
-            )
-          })}
-          <div>
-            <button type="button" onClick={() => this.createChoice(index)}>Add option</button>
-          </div>
-          <div>
-            <label>
-              <input type="checkbox" onChange={({target}) => this.updateFieldState(index, 'multi', target.checked)} />
-              Allow multiple answers
-            </label>
-            <button type="button" onClick={() => this.destroyField(index)}>Delete Question</button>
-          </div>
-        </div>
-      )
-    }
+  handleFormSubmit(e){
+    e.preventDefault();
+    this.setState({export: JSON.stringify(this.props.fields)});
   }
 
   render(){
     return (
       <Wrap>
-        <Margin bottom={5}>
-          <select id="field_selector">
-            <option value="text">Text Question</option>
-            <option value="choice">Choice Question</option>
-          </select>
-          <button type="button" onClick={this.handleAddField.bind(this)}>Add field</button>
-        </Margin>
-
+        <FormImport/>
+        <FormAdd />
         <form onSubmit={this.handleFormSubmit.bind(this)}>
-          { this.state.fields.map((field, index) => {
-            return(
-              <Margin key={index} bottom={3}>
-                {this.renderField(field, index)}
-              </Margin>
-            )
-          })}
-          <button type="submit">Sumbit</button>
+          { this.props.fields.map((field, index) => (
+            <Margin key={index} bottom={3}>
+              { field.type === "text" &&
+                <QuestionText field={field} />
+              }
+
+              { field.type === "choice" &&
+                <QuestionChoice field={field} />
+              }
+            </Margin>
+          ))}
+          <Actions>
+            <Button type="submit">Submit</Button>
+          </Actions>
+          { this.state.export &&
+            <Margin top={8}>
+              <h2>Export JSON</h2>
+              <Export value={this.state.export} readOnly/>
+            </Margin>
+          }
         </form>
       </Wrap>
     )
   }
 }
 
-export default Form;
+Form.propTypes = {
+  fields: PropTypes.array
+};
+
+
+const mapStateToProps = (state) => {
+  return {
+    fields: state.questionnaire.fields
+  }
+}
+
+export default connect(mapStateToProps, {createField})(Form);

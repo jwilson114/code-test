@@ -1,4 +1,4 @@
-import {theme} from 'styles/theme';
+// import {theme} from 'styles/theme';
 
 export const Base = `
   html {
@@ -6,7 +6,7 @@ export const Base = `
   }
 
   body {
-    background-color: ${theme.colors.echo};
+    background-color: #fff;
   }
 
   *,
