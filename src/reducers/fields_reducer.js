@@ -91,8 +91,6 @@ const feildsReducer = (state = initialState, action) => {
         ...state,
         fields: action.payload
       };
-
-
 		default:
 			return state;
 	}
